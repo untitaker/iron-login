@@ -56,6 +56,8 @@ pub fn log_out_of(response: &mut Response) {
     response.get_mut::<oven::ResponseCookies>().unwrap().remove("logged_in_user");
 }
 
+pub fn log_out() -> LogoutModifier { LogoutModifier }
+
 pub struct LogoutModifier;
 impl iron::modifier::Modifier<Response> for LogoutModifier {
     fn modify(self, response: &mut Response) { log_out_of(response) }
