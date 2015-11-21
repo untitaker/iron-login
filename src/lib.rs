@@ -43,13 +43,7 @@ pub trait User: Send + Sync + Sized {
         response.set_cookie(cookie::Cookie::new("logged_in_user".to_owned(), self.get_username().to_owned()));
     }
 
-
-    fn log_out_of(&self, response: &mut Response) {
-        response.set_cookie(cookie::Cookie::new("logged_in_user".to_owned(), self.get_username().to_owned()));
-    }
-
     fn log_in(self) -> LoginModifier<Self> { LoginModifier { user: self } }
-    fn log_out(self) -> LogoutModifier<Self> { LogoutModifier { user: self } }
 }
 
 pub struct LoginModifier<U: User> { user: U }
@@ -57,7 +51,12 @@ impl<U: User> iron::modifier::Modifier<Response> for LoginModifier<U> {
     fn modify(self, response: &mut Response) { self.user.log_in_on(response) }
 }
 
-pub struct LogoutModifier<U: User> { user: U }
-impl<U: User> iron::modifier::Modifier<Response> for LogoutModifier<U> {
-    fn modify(self, response: &mut Response) { self.user.log_out_of(response) }
+
+pub fn log_out_of(response: &mut Response) {
+    response.get_mut::<oven::ResponseCookies>().unwrap().remove("logged_in_user");
+}
+
+pub struct LogoutModifier;
+impl iron::modifier::Modifier<Response> for LogoutModifier {
+    fn modify(self, response: &mut Response) { log_out_of(response) }
 }
