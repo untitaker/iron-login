@@ -16,5 +16,5 @@ iron = "0.2"
 oven = "0.2"
 
 [dependencies.cookie]
-version = "^0.1.21"
+version = "0.2"
 features = ["secure"]
