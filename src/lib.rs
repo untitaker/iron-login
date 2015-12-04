@@ -42,7 +42,7 @@ pub trait User: Send + Sync + Sized {
     fn log_in_on(&self, response: &mut Response) {
         response.set_cookie({
             let mut x = cookie::Cookie::new("logged_in_user".to_owned(), self.get_username().to_owned());
-            x.path = None;
+            x.path = Some("/".to_owned());
             x
         });
     }
