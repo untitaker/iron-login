@@ -33,36 +33,37 @@ pub trait User: Send + Sync + Sized {
 
     fn from_request(request: &mut Request) -> Option<Self> {
         let value = match request.get_cookie("logged_in_user") {
-            Some(x) => x.value.clone(),
-            None => return None
+            Some(x) if x.value.len() > 0 => x.value.clone(),
+            _ => return None
         };
         Self::from_username(request, &value[..])
-    }
-
-    fn log_in_on(&self, response: &mut Response) {
-        response.set_cookie({
-            let mut x = cookie::Cookie::new("logged_in_user".to_owned(), self.get_username().to_owned());
-            x.path = Some("/".to_owned());
-            x
-        });
     }
 
     fn log_in(self) -> LoginModifier<Self> { LoginModifier { user: self } }
 }
 
+
 pub struct LoginModifier<U: User> { user: U }
 impl<U: User> iron::modifier::Modifier<Response> for LoginModifier<U> {
-    fn modify(self, response: &mut Response) { self.user.log_in_on(response) }
+    fn modify(self, response: &mut Response) { log_in_on(response, self.user.get_username()) }
 }
 
-
-pub fn log_out_of(response: &mut Response) {
-    response.get_mut::<oven::ResponseCookies>().unwrap().remove("logged_in_user");
+pub fn log_in_on(response: &mut Response, username: &str) {
+    response.set_cookie({
+        let mut x = cookie::Cookie::new("logged_in_user".to_owned(), username.to_owned());
+        x.path = Some("/".to_owned());
+        x
+    });
 }
 
-pub fn log_out() -> LogoutModifier { LogoutModifier }
 
 pub struct LogoutModifier;
 impl iron::modifier::Modifier<Response> for LogoutModifier {
     fn modify(self, response: &mut Response) { log_out_of(response) }
 }
+
+pub fn log_out_of(response: &mut Response) {
+    log_in_on(response, "");
+}
+
+pub fn log_out() -> LogoutModifier { LogoutModifier }
