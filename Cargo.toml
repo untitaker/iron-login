@@ -14,6 +14,7 @@ homepage = "https://github.com/untitaker/iron-login"
 [dependencies]
 iron = "0.2"
 oven = "0.2"
+persistent = "0.0"
 
 [dependencies.cookie]
 version = "0.2"
