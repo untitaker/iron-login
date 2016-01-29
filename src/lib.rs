@@ -8,6 +8,9 @@ use iron::typemap::Key;
 use iron::middleware;
 use oven::prelude::*;
 
+/// Re-export of the Cookie class.
+pub use cookie::Cookie;
+
 pub struct LoginManager {
     signing_key: Vec<u8>,
     pub config: Config
@@ -36,17 +39,21 @@ impl middleware::AroundMiddleware for LoginManager {
 
 #[derive(Debug, Clone)]
 pub struct Config {
-    pub httponly: bool,
-    pub path: Option<String>,
-    pub cookie_name: String
+    /// This cookie contains the default values that will be used for session cookies.
+    ///
+    /// You may e.g. override `httponly` or `secure` however you wish.
+    pub cookie_base: Cookie
 }
 
 impl Config {
     pub fn defaults() -> Self {
         Config {
-            httponly: true,
-            path: Some("/".to_owned()),
-            cookie_name: "logged_in_user".to_owned()
+            cookie_base: {
+                let mut c = Cookie::new("logged_in_user".to_owned(), "".to_owned());
+                c.httponly = true;
+                c.path = Some("/".to_owned());
+                c
+            }
         }
     }
 }
@@ -70,7 +77,7 @@ pub struct Login<U: User> {
 impl<U: User> Login<U> {
     fn from_request(request: &mut Request) -> Login<U> {
         let config = (*request.get::<persistent::Read<Config>>().unwrap()).clone();
-        let username = match request.get_cookie(&config.cookie_name) {
+        let username = match request.get_cookie(&config.cookie_base.name) {
             Some(x) if x.value.len() > 0 => Some(x.value.clone()),
             _ => None
         };
@@ -100,12 +107,8 @@ pub struct LoginModifier<U: User> { login: Login<U> }
 impl<U: User> iron::modifier::Modifier<Response> for LoginModifier<U> {
     fn modify(self, response: &mut Response) {
         response.set_cookie({
-            let mut x = cookie::Cookie::new(
-                self.login.config.cookie_name.clone(),
-                self.login.user.as_ref().map(|u| u.get_username()).unwrap_or("").to_owned()
-            );
-            x.path = self.login.config.path.clone();
-            x.httponly = self.login.config.httponly;
+            let mut x = self.login.config.cookie_base.clone();
+            x.value = self.login.user.as_ref().map(|u| u.get_username()).unwrap_or("").to_owned();
             x
         });
     }
