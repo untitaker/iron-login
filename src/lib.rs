@@ -19,8 +19,8 @@ pub use cookie::Cookie;
 /// Stores the configuration in persistent data and adds an oven with the specified key.
 pub struct LoginManager {
     signing_key: Vec<u8>,
-	/// Configuration for this manager
-    pub config: Config
+    /// Configuration for this manager
+    pub config: Config,
 }
 
 impl LoginManager {
@@ -28,7 +28,7 @@ impl LoginManager {
     pub fn new(signing_key: Vec<u8>) -> LoginManager {
         LoginManager {
             signing_key: signing_key,
-            config: Config::defaults()
+            config: Config::defaults(),
         }
     }
 }
@@ -51,7 +51,7 @@ pub struct Config {
     /// This cookie contains the default values that will be used for session cookies.
     ///
     /// You may e.g. override `httponly` or `secure` however you wish.
-    pub cookie_base: Cookie
+    pub cookie_base: Cookie,
 }
 
 impl Config {
@@ -63,7 +63,7 @@ impl Config {
                 c.httponly = true;
                 c.path = Some("/".to_owned());
                 c
-            }
+            },
         }
     }
 }
@@ -72,9 +72,9 @@ impl Key for Config { type Value = Config; }
 
 /// Trait repesenting an authenticated user
 pub trait User: Send + Sync + Sized {
-	/// Create a `User` instance from a username
+    /// Create a `User` instance from a username
     fn from_username(request: &mut Request, username: &str) -> Option<Self>;
-	/// Get the username associated with this `User`
+    /// Get the username associated with this `User`
     fn get_username(&self) -> &str;
     /// Create a `Login<Self>` instance (no need to override)
     fn get_login(request: &mut Request) -> Login<Self> {
@@ -87,7 +87,7 @@ pub trait User: Send + Sync + Sized {
 /// To construct this within a request, use `User::get_login()`
 pub struct Login<U: User> {
     user: Option<U>,
-    config: Config
+    config: Config,
 }
 
 impl<U: User> Login<U> {
@@ -95,12 +95,12 @@ impl<U: User> Login<U> {
         let config = (*request.get::<persistent::Read<Config>>().unwrap()).clone();
         let username = match request.get_cookie(&config.cookie_base.name) {
             Some(x) if x.value.len() > 0 => Some(x.value.clone()),
-            _ => None
+            _ => None,
         };
 
         Login {
             user: username.and_then(|username| U::from_username(request, &username)),
-            config: config
+            config: config,
         }
     }
 
@@ -124,7 +124,9 @@ impl<U: User> Login<U> {
 
 
 /// Iron modifier that updates the cookie
-pub struct LoginModifier<U: User> { login: Login<U> }
+pub struct LoginModifier<U: User> {
+    login: Login<U>,
+}
 impl<U: User> iron::modifier::Modifier<Response> for LoginModifier<U> {
     fn modify(self, response: &mut Response) {
         response.set_cookie({
