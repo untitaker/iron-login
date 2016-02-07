@@ -21,6 +21,6 @@ clean:
 
 upload:
 	cd "$(THIS_DIR)"
-	echo '<!doctype html><title>iron-login</title><meta http-equiv="refresh" content="0; ./iron-login/">' \
+	echo '<!doctype html><title>iron-login</title><meta http-equiv="refresh" content="0; ./iron_login/">' \
 		> ./target/doc/index.htm
 	rsync -av --chmod=755 ./target/doc/ untispace:~/virtual/iron-login.unterwaditzer.net/
