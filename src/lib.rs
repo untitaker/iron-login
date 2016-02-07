@@ -1,63 +1,9 @@
 //! This crate provides an iron middleware that handles user login sessions
-//! using an encrypted authentication cookie.
+//! using a cryptographically signed authentication cookie.
 //!
-//! # Example
-//! ```no_run
-//! # extern crate iron;
-//! # extern crate iron_login;
-//! #
-//! use iron::prelude::*;
-//! use iron_login::User;
-//!
-//! #[derive(Debug)]
-//! /// Representation of an authenticated user
-//! struct MyUser(String);
-//! impl MyUser {
-//!     fn new(name: &str) -> MyUser {
-//!         MyUser( name.to_owned() )
-//!     }
-//! }
-//! impl User for MyUser {
-//!     fn from_username(_: &mut Request, name: &str) -> Option<MyUser> {
-//!         Some( MyUser(name.to_owned()) )
-//!     }
-//!     fn get_username(&self) -> &str {
-//!         &self.0
-//!     }
-//! }
-//!
-//! /// A basic iron request handler
-//! fn request_handler(req: &mut Request) -> IronResult<Response> {
-//!     let login = MyUser::get_login(req);
-//!     // If a query (`?username`) is passed, set the username to that string
-//!     if let Some(ref uname) = req.url.query
-//!     {
-//!         let uname: &str = &req.url.path[0];
-//!         Ok(Response::new()
-//!             .set( ::iron::status::Ok )
-//!             .set( "User set" )
-//!             .set( login.log_in( MyUser::new(uname) ) )
-//!             )
-//!     }
-//!     // Otherwise respond with the current user
-//!     else
-//!     {
-//!         let user = login.get_user();
-//!         Ok(Response::new()
-//!             .set( ::iron::status::Ok )
-//!             .set( format!("user = {:?}", user) )
-//!             )
-//!     }
-//! }
-//! 
-//! fn main() {
-//!     let cookie_signing_key = b"My Secret Key"[..].to_owned();
-//! 
-//!     let mut chain = Chain::new(request_handler);
-//!     chain.link_around( ::iron_login::LoginManager::new(cookie_signing_key) );
-//!     Iron::new(chain).http("localhost:3000").unwrap();
-//! }
-//! ```
+//! # Usage
+//! - Add an instance of the `LoginMagager` to your Iron handler chain
+//! - Call `<MyUserType as iron_login::User>::get_login(req)` in your handler to get a `Login` instance
 extern crate iron;
 extern crate oven;
 extern crate cookie;
@@ -77,11 +23,12 @@ pub use cookie::Cookie;
 /// Stores the configuration in persistent data and adds an oven with the specified key.
 pub struct LoginManager {
     signing_key: Vec<u8>,
+	/// Configuration for this manager
     pub config: Config
 }
 
 impl LoginManager {
-    /// Construct a new login middleware
+    /// Construct a new login middleware using the provided signing key
     pub fn new(signing_key: Vec<u8>) -> LoginManager {
         LoginManager {
             signing_key: signing_key,
@@ -129,7 +76,9 @@ impl Key for Config { type Value = Config; }
 
 /// Trait repesenting an authenticated user
 pub trait User: Send + Sync + Sized {
+	/// Create a `User` instance from a username
     fn from_username(request: &mut Request, username: &str) -> Option<Self>;
+	/// Get the username associated with this `User`
     fn get_username(&self) -> &str;
     /// Create a `Login<Self>` instance (no need to override)
     fn get_login(request: &mut Request) -> Login<Self> {
