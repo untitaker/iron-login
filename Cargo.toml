@@ -7,7 +7,7 @@ license = "MIT"
 keywords = ["iron", "sessions", "cookies"]
 readme = "README.md"
 
-description = "Work-in-progress session management in Iron."
+description = "Basic session management in Iron."
 repository = "https://github.com/untitaker/iron-login"
 homepage = "https://github.com/untitaker/iron-login"
 
