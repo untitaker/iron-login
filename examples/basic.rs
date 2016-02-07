@@ -27,12 +27,23 @@ fn request_handler(req: &mut Request) -> IronResult<Response> {
     // If a query (`?username`) is passed, set the username to that string
     if let Some(ref uname) = req.url.query
     {
-        let uname: &str = &req.url.path[0];
-        Ok(Response::new()
-            .set( ::iron::status::Ok )
-            .set( "User set" )
-            .set( login.log_in( MyUser::new(uname) ) )
-            )
+		// If no username is passed, log out
+		if uname == ""
+		{
+			Ok(Response::new()
+				.set( ::iron::status::Ok )
+				.set( format!("Logged out") )
+				.set( login.log_out() )
+				)
+		}
+		else
+		{
+			Ok(Response::new()
+				.set( ::iron::status::Ok )
+				.set( format!("User set to '{}'", uname) )
+				.set( login.log_in( MyUser::new(uname) ) )
+				)
+		}
     }
     // Otherwise respond with the current user
     else
