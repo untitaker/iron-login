@@ -72,10 +72,10 @@ impl Key for Config { type Value = Config; }
 
 /// Trait repesenting an authenticated user
 pub trait User: Send + Sync + Sized {
-    /// Create a `User` instance from a username
-    fn from_username(request: &mut Request, username: &str) -> Option<Self>;
-    /// Get the username associated with this `User`
-    fn get_username(&self) -> &str;
+    /// Create a `User` instance from a user id
+    fn from_user_id(request: &mut Request, user_id: &str) -> Option<Self>;
+    /// Get the user_id associated with this `User`
+    fn get_user_id(&self) -> &str;
     /// Create a `Login<Self>` instance (no need to override)
     fn get_login(request: &mut Request) -> Login<Self> {
         Login::from_request(request)
@@ -93,13 +93,13 @@ pub struct Login<U: User> {
 impl<U: User> Login<U> {
     fn from_request(request: &mut Request) -> Login<U> {
         let config = (*request.get::<persistent::Read<Config>>().unwrap()).clone();
-        let username = match request.get_cookie(&config.cookie_base.name) {
-            Some(x) if x.value.len() > 0 => Some(x.value.clone()),
+        let user_id = match request.get_cookie(&config.cookie_base.name) {
+            Some(c) if c.value.len() > 0 => Some(c.value.clone()),
             _ => None,
         };
 
         Login {
-            user: username.and_then(|username| U::from_username(request, &username)),
+            user: user_id.and_then(|user_id| U::from_user_id(request, &user_id)),
             config: config,
         }
     }
@@ -131,7 +131,10 @@ impl<U: User> iron::modifier::Modifier<Response> for LoginModifier<U> {
     fn modify(self, response: &mut Response) {
         response.set_cookie({
             let mut x = self.login.config.cookie_base.clone();
-            x.value = self.login.user.as_ref().map(|u| u.get_username()).unwrap_or("").to_owned();
+            x.value = self.login.user.as_ref()
+                                     .map(|u| u.get_user_id())
+                                     .unwrap_or("")
+                                     .to_owned();
             x
         });
     }

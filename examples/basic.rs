@@ -8,15 +8,15 @@ use iron_login::User;
 /// Representation of an authenticated user
 struct MyUser(String);
 impl MyUser {
-    fn new(name: &str) -> MyUser {
-        MyUser(name.to_owned())
+    fn new(user_id: &str) -> MyUser {
+        MyUser(user_id.to_owned())
     }
 }
 impl User for MyUser {
-    fn from_username(_: &mut Request, name: &str) -> Option<MyUser> {
-        Some(MyUser(name.to_owned()))
+    fn from_user_id(_: &mut Request, user_id: &str) -> Option<MyUser> {
+        Some(MyUser(user_id.to_owned()))
     }
-    fn get_username(&self) -> &str {
+    fn get_user_id(&self) -> &str {
         &self.0
     }
 }
@@ -25,9 +25,9 @@ impl User for MyUser {
 fn request_handler(req: &mut Request) -> IronResult<Response> {
     let login = MyUser::get_login(req);
     // If a query (`?username`) is passed, set the username to that string
-    if let Some(ref uname) = req.url.query {
+    if let Some(ref uid) = req.url.query {
         // If no username is passed, log out
-        if uname == "" {
+        if uid == "" {
             Ok(Response::new()
                    .set(::iron::status::Ok)
                    .set(format!("Logged out"))
@@ -35,8 +35,8 @@ fn request_handler(req: &mut Request) -> IronResult<Response> {
         } else {
             Ok(Response::new()
                    .set(::iron::status::Ok)
-                   .set(format!("User set to '{}'", uname))
-                   .set(login.log_in(MyUser::new(uname))))
+                   .set(format!("User set to '{}'", uid))
+                   .set(login.log_in(MyUser::new(uid))))
         }
     } else {
         let user = login.get_user();
