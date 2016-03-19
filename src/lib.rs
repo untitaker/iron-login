@@ -75,7 +75,7 @@ pub trait User: Send + Sync + Sized {
     /// Create a `User` instance from a user id
     fn from_user_id(request: &mut Request, user_id: &str) -> Option<Self>;
     /// Get the user_id associated with this `User`
-    fn get_user_id(&self) -> &str;
+    fn get_user_id(&self) -> String;
     /// Create a `Login<Self>` instance (no need to override)
     fn get_login(request: &mut Request) -> Login<Self> {
         Login::from_request(request)
@@ -131,10 +131,9 @@ impl<U: User> iron::modifier::Modifier<Response> for LoginModifier<U> {
     fn modify(self, response: &mut Response) {
         response.set_cookie({
             let mut x = self.login.config.cookie_base.clone();
-            x.value = self.login.user.as_ref()
-                                     .map(|u| u.get_user_id())
-                                     .unwrap_or("")
-                                     .to_owned();
+            x.value = self.login.user
+                .map(|u| u.get_user_id())
+                .unwrap_or_else(|| "".to_owned());
             x
         });
     }

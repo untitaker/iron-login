@@ -16,8 +16,8 @@ impl User for MyUser {
     fn from_user_id(_: &mut Request, user_id: &str) -> Option<MyUser> {
         Some(MyUser(user_id.to_owned()))
     }
-    fn get_user_id(&self) -> &str {
-        &self.0
+    fn get_user_id(&self) -> String {
+        self.0.to_owned()
     }
 }
 
@@ -50,6 +50,6 @@ fn main() {
     let cookie_signing_key = b"My Secret Key"[..].to_owned();
 
     let mut chain = Chain::new(request_handler);
-    chain.link_around(::iron_login::LoginManager::new(cookie_signing_key));
+    chain.around(::iron_login::LoginManager::new(cookie_signing_key));
     Iron::new(chain).http("localhost:3000").unwrap();
 }
