@@ -4,6 +4,7 @@ Basic session management in Iron.
 
 * [Documentation](https://iron-login.unterwaditzer.net/)
 * [Repository](https://github.com/untitaker/iron-login/)
+* [Crates.io](https://crates.io/crates/iron-login)
 
 This crate provides an iron middleware that handles user login sessions
 using a cryptographically signed authentication cookie.
