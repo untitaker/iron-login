@@ -1,5 +1,10 @@
 // DOCS
 
+#![cfg_attr(feature = "clippy", allow(unstable_features))]
+#![cfg_attr(feature = "clippy", feature(plugin))]
+#![cfg_attr(feature = "clippy", plugin(clippy))]
+#![cfg_attr(feature = "clippy", deny(warnings))]
+
 extern crate iron;
 extern crate oven;
 extern crate cookie;
@@ -94,7 +99,7 @@ impl<U: User> Login<U> {
     fn from_request(request: &mut Request) -> Login<U> {
         let config = (*request.get::<persistent::Read<Config>>().unwrap()).clone();
         let user_id = match request.get_cookie(&config.cookie_base.name) {
-            Some(c) if c.value.len() > 0 => Some(c.value.clone()),
+            Some(c) if !c.value.is_empty() => Some(c.value.clone()),
             _ => None,
         };
 
@@ -132,8 +137,7 @@ impl<U: User> iron::modifier::Modifier<Response> for LoginModifier<U> {
         response.set_cookie({
             let mut x = self.login.config.cookie_base.clone();
             x.value = self.login.user
-                .map(|u| u.get_user_id())
-                .unwrap_or_else(|| "".to_owned());
+                .map_or_else(|| "".to_owned(), |u| u.get_user_id());
             x
         });
     }
