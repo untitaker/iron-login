@@ -15,7 +15,6 @@ homepage = "https://github.com/untitaker/iron-login"
 iron = "0.2"
 oven = "=0.2.16"
 persistent = "0.0"
-clippy = {git = "https://github.com/Manishearth/rust-clippy", version = "*", optional = true}
 
 [dependencies.cookie]
 version = "0.2"
