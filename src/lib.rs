@@ -92,7 +92,9 @@ pub struct Login<U: User> {
 
 impl<U: User> Login<U> {
     fn from_request(request: &mut Request) -> Login<U> {
-        let config = (*request.get::<persistent::Read<Config>>().unwrap()).clone();
+        let config = request.get::<persistent::Read<Config>>()
+                            .expect("config is not found in request");
+        let config = (*config).clone();
         let user_id = match request.get_cookie(&config.cookie_base.name) {
             Some(c) if !c.value.is_empty() => Some(c.value.clone()),
             _ => None,
