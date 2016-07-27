@@ -12,9 +12,9 @@ repository = "https://github.com/untitaker/iron-login"
 homepage = "https://github.com/untitaker/iron-login"
 
 [dependencies]
-iron = "0.3"
-oven = "0.3"
-persistent = "0.1"
+iron = "0.4"
+oven = "0.4"
+persistent = "0.2"
 
 [dependencies.cookie]
 version = "0.2"

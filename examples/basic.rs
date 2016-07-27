@@ -25,9 +25,9 @@ impl User for MyUser {
 fn request_handler(req: &mut Request) -> IronResult<Response> {
     let login = MyUser::get_login(req);
     // If a query (`?username`) is passed, set the username to that string
-    if let Some(ref uid) = req.url.query {
+    if let Some(ref uid) = req.url.query() {
         // If no username is passed, log out
-        if uid == "" {
+        if uid.is_empty() {
             Ok(Response::new()
                    .set(::iron::status::Ok)
                    .set(format!("Logged out"))
