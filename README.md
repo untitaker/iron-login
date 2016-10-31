@@ -1,4 +1,11 @@
+
 # iron-login [![Build Status](https://travis-ci.org/untitaker/iron-login.svg?branch=master)](https://travis-ci.org/untitaker/iron-login)
+
+## Deprecated
+
+Work-in-progress for new crate is at ``iron-sessionstorage``.
+
+----
 
 Basic session management in Iron.
 
