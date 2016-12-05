@@ -17,6 +17,7 @@ pub use cookie::Cookie;
 /// Iron middleware providing user loging management
 /// 
 /// Stores the configuration in persistent data and adds an oven with the specified key.
+#[deprecated(since="0.5.1", note="Please use iron-sessionstorage. This entire crate is deprecated.")]
 pub struct LoginManager {
     signing_key: Vec<u8>,
     /// Configuration for this manager
